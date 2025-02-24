@@ -1,8 +1,66 @@
 #include <iostream>
 #include <vector>
-
-
+#include <fstream>
+#include <string>
 using namespace std;
+
+
+void displayTape(const vector<int>& tape, int pos) {
+    int windowSize = 10; 
+    int start = max(0, pos - windowSize / 2);
+    int end = min((int)tape.size(), start + windowSize);
+
+    cout << "\nTAPE VALUES:\n---------------------------\n";
+
+    // Print tape values
+    for (int i = start; i < end; i++) {
+        if (i == pos) cout << "[" << tape[i] << "] "; 
+        else cout << tape[i] << " ";
+    }
+    cout << "\n---------------------------\n";
+    cout << "\nMEMORY ADDRESS:\n---------------------------\n";
+
+    // Print tape values
+    for (int i = start; i < end; i++) {
+        if (i == pos) cout << "[" << i << "] "; 
+        else cout << i << " ";
+    }
+    
+   
+    cout << "\n";
+}
+
+
+void saveTape(const vector<int>& tape, const string& filename) {
+    ofstream file(filename);
+    if (!file) {
+        cout << "--File Error--\nFailed to save tape!\n\n";
+        return;
+    }
+    for (int bit : tape) {
+        file << bit;
+    }
+    file.close();
+    cout << "--TAPE SAVED--\nFile: " << filename << "\n\n";
+}
+
+void loadTape(vector<int>& tape, const string& filename) {
+    ifstream file(filename);
+    if (!file) {
+        cout << "--File Error--\nTape file not found!\n\n";
+        return;
+    }
+    
+    tape.clear();
+    char bit;
+    while (file.get(bit)) {  // Use file.get to read character-by-character
+        if (bit == '0' || bit == '1') {
+            tape.push_back(bit - '0'); // Convert char to int
+        }
+    }
+    file.close();
+    cout << "--TAPE LOADED--\nNew size: " << tape.size() << "\n\n";
+}
 int main() {
     std::vector<int> tape;
     int pos = 0;
@@ -12,10 +70,21 @@ int main() {
     for(int i=0; i<2040; i++){
         tape.push_back(rand() % 2);
     }
-
+    cout<<"Tape>";
+    cin>>move;
     while(1){
-        cout<<"Tape>";
-        cin>>move;
+        if (move == 'o') {
+            string fname;
+            cout<<"SAVE TAPE AS: ";
+            getline(cin>>ws, fname);
+            saveTape(tape, fname);
+        } else if (move == 'l') {
+            string fname;
+            cout<<"LOAD TAPE: ";
+            getline(cin>>ws, fname);
+            
+            loadTape(tape, fname);
+        } else
         if(move == '>'){
             oldpos = pos;
             if(pos!=tape.size()){
@@ -53,28 +122,7 @@ int main() {
 
         }else
         if (move == 't') {
-            int displayPos = pos; 
-            std::string indexPointer;
-            int limit = min(pos + 10, (int)tape.size()); 
-            cout<<"\nTAPE:";
-            cout << "\nVALUES:  ";
-            for (int i = displayPos; i < limit; i++) {
-                if(i<10){
-                    indexPointer =  "/\\\n";
-                    cout << tape[i] << "|";
-                }else
-                if(i>10){
-                    indexPointer =  " /\\\n";
-                    cout << tape[i] << " |";
-                }
-            }
-            cout << "\nADDRESS: ";
-            for (int i = displayPos; i < limit; i++) {
-                
-                cout << i << "|";
-                
-            }
-            cout << "\n        "+indexPointer;
+            displayTape(tape, pos);
         
     
         }else
@@ -119,14 +167,35 @@ int main() {
         }else
         if (move == 'p') {
             if (pos < tape.size()) {
-                tape.resize(pos + 1); // Cut the tape at the current position
-                cout << "--SPLIT--\n";
+                tape.resize(pos + 1); 
+                cout << "--PARTITION--\n";
                 cout << "Tape split at position: " << pos << "\n";
                 cout << "New tape size: " << tape.size() << "\n\n";
             } else {
                 cout << "--Memory Error--\nCannot partition at this position.\n\n";
             }
         }else
+        if (move == 'e') { 
+            int newSize;
+            cout << "\nEXPAND TAPE BY: ";
+            cin >> newSize;
+        
+            if (newSize > 0) {
+                int oldSize = tape.size();
+                tape.resize(oldSize + newSize);  // Resize first, without setting values
+        
+                // Randomize only the new part
+                for (int i = oldSize; i < tape.size(); i++) {
+                    tape[i] = rand() % 2;  // Now each new element is randomized
+                }
+        
+                cout << "--TAPE EXPANDED--\nNew tape size: " << tape.size() << "\n\n";
+            } else {
+                cout << "--Memory Error--\nNew size must be a positive number!\n\n";
+            }
+        }
+        
+        else
         if (move == 's') {
             cout<<"TAPE SIZE: "<<tape.size()<<"\n";
         }else
@@ -134,13 +203,14 @@ int main() {
             cout << "FULL TAPE:\n";
             for (size_t i = 0; i < tape.size(); i++) {
                 cout << tape[i] << " ";
-                if ((i + 1) % 50 == 0) cout << "\n"; // Newline every 50 values for readability
+                if ((i + 1) % 50 == 0) cout << "\n"; 
             }
             cout << "\n\n";
         }
         
-        
+        cout<<"Tape>";
+        cin>>move;
     }
-
+    
     return 0;
 }
